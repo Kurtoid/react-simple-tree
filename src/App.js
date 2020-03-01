@@ -28,7 +28,7 @@ class App extends React.Component {
     const { data } = this.state
     return (
       <div className="App">
-        <SimpleTree data={data} onChange={(data) => { this.setState({ data: data }) }} />
+        <SimpleTree data={data} onChange={(data) => { this.setState({ data: data }); console.log(data) }} />
       </div>
     );
   }

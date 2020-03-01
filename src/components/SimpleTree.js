@@ -1,28 +1,64 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import './tree.css'
-class NodeLabel extends React.Component {
-    constructor(props) {
-        super(props)
-        this.handleNodeClick = this.handleNodeClick.bind(this)
+import { DndProvider, useDrop } from 'react-dnd'
+import Backend from 'react-dnd-html5-backend'
+import { ItemTypes } from '../Constants'
+import { useDrag } from 'react-dnd'
+function getNodeById(id, data) {
+    for (let i = 0; i < data.length; i++) {
+        if (data[i].id === id) {
+            return data[i]
+        }
     }
-    handleNodeClick() {
-        const { onClick, node } = this.props
+    return null
+}
+function NodeLabel(props) {
+    const ref = useRef(null)
+    const handleNodeClick = () => {
+        const { onClick, node } = props
         onClick(node.id)
     }
-    render() {
-        const { node, subNodes } = this.props
-        let bullet = ">"
-        if (node.collapsed || subNodes === undefined) {
-            bullet = "*";
-        }
-        return (
-            <li key={node.id} >
-                <div onClick={this.handleNodeClick}>{bullet} {node.name}</div>
-                {subNodes}
-            </li>
-        )
+    const { node, subNodes } = props
+    const [{ isDragging }, drag] = useDrag({
+        item: { type: ItemTypes.NodeLabel, nodeId: node.id },
+        collect: monitor => ({
+            isDragging: !!monitor.isDragging(),
+        }),
+    })
+    const [, drop] = useDrop({
+        accept: ItemTypes.NodeLabel,
+        drop(item, monitor) {
+            if (!ref.current) {
+                return
+            }
+            let droppedNode = getNodeById(item.nodeId, props.data);
+            console.log("dropped " + droppedNode.id + " on " + node.id)
+            if (!droppedNode) {
+                return
+            }
+            if (item.nodeId === node.id || droppedNode.parent === null) {
+                return
+            }
+            droppedNode.parent = node.id
+            node.collapsed = false
 
+            props.onChange(props.data)
+        }
+    })
+
+    let bullet = ">"
+    if (node.collapsed || subNodes === undefined) {
+        bullet = "*";
     }
+    if (node.id !== null) {
+        drag(drop(ref))
+    }
+    return (
+        <li >
+            <div ref={ref} onClick={handleNodeClick}>{bullet} {node.name}</div>
+            {subNodes}
+        </li>
+    )
 }
 class SimpleTree extends React.Component {
     constructor(props) {
@@ -56,7 +92,6 @@ class SimpleTree extends React.Component {
         return ret;
     }
     handleNodeClick(nodeId) {
-        console.log(nodeId)
         const { data } = this.props
         let node = null
         for (let i = 0; i < data.length; i++) {
@@ -85,17 +120,18 @@ class SimpleTree extends React.Component {
             subNodes = <ul>{rows}</ul>
         }
         return (
-            <NodeLabel node={node} subNodes={subNodes} onClick={this.handleNodeClick} />
+            <NodeLabel onChange={this.props.onChange} data={this.props.data} node={node} key={node.id} subNodes={subNodes} onClick={this.handleNodeClick} />
         )
     }
     render() {
-        const { data } = this.props;
         return (
-            <div>
-                <ul>
-                    {this.renderNode(this.getRootNode())}
-                </ul>
-            </div>
+            <DndProvider backend={Backend}>
+                <div>
+                    <ul>
+                        {this.renderNode(this.getRootNode())}
+                    </ul>
+                </div>
+            </DndProvider>
         )
     }
 }
