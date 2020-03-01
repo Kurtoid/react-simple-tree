@@ -23,12 +23,27 @@ class App extends React.Component {
         { id: 5, name: "1sub2", parent: 2 }
       ]
     }
+    this.setNodeParent = this.setNodeParent.bind(this)
+  }
+  setNodeParent(parentId, childId) {
+    console.log("set parent " + parentId + " " + childId)
+    console.log("set parent " + typeof (parentId) + " " + typeof (childId))
+    let childNode = null
+    for (let i = 0; i < this.state.data.length; i++) {
+      if (this.state.data[i].id === childId) {
+        childNode = this.state.data[i]
+        break
+      }
+    }
+    childNode.parent = parentId
+    this.setState({ data: this.state.data })
+    console.log(this.state.data)
   }
   render() {
     const { data } = this.state
     return (
       <div className="App">
-        <SimpleTree data={data} onChange={(data) => { this.setState({ data: data }); console.log(data) }} />
+        <SimpleTree data={data} setParent={this.setNodeParent} />
       </div>
     );
   }
