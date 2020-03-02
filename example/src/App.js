@@ -1,5 +1,5 @@
 import React from 'react';
-import SimpleTree from './components/SimpleTree';
+import SimpleTree from 'react-simple-tree';
 
 // simple driver
 /*
