@@ -2,7 +2,7 @@ import React, { useRef } from 'react';
 import './tree.css'
 import { DndProvider, useDrop } from 'react-dnd'
 import Backend from 'react-dnd-html5-backend'
-import { ItemTypes } from '../Constants'
+import { ItemTypes } from './Constants'
 import { useDrag } from 'react-dnd'
 function NodeLabel(props) {
     const ref = useRef(null)
